@@ -625,43 +625,53 @@ function setupCalendarClickOutside() {
     });
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
-    await loadTrains();
-    await loadStations();
-    initMaterialCalendar();
-    setupCalendarBlurClose();
-    setupCalendarClickOutside();
-    setupTrainDropdown();
-    setupClearButton('train-model-input', 'train-model-clear');
-    initializeTrainSearch();
-    const matrixForm = document.getElementById("matrixForm");
-    if (matrixForm) matrixForm.addEventListener("submit", validateForm);
+document.addEventListener('DOMContentLoaded', async function () {
+    if (document.getElementById('bannerModal')) {
+        await loadBannerImage();
 
-    const fields = [
-        { id: 'train_model', errorId: 'train_model-error' },
-        { id: 'date', errorId: 'date-error' }
-    ];
+        const configData = JSON.parse(document.getElementById('app-config').textContent);
+        const forceBanner = configData.force_banner || 0;
+        const appVersion = configData.version || "1.0.0";
 
-    fields.forEach(field => {
-        const inputField = document.getElementById(field.id);
-        const errorField = document.getElementById(field.errorId);
-        const textInput = field.id === 'train_model' ? document.getElementById('train-model-input') : null;
-        if (inputField && errorField) {
-            const fieldElement = textInput || inputField;
-            fieldElement.addEventListener('input', function () {
-                if (errorField.classList.contains('show')) {
-                    errorField.classList.remove('show');
-                    errorField.classList.add('hide');
-                    fieldElement.classList.remove('error-input');
-                }
-            });
-            errorField.addEventListener('animationend', function (event) {
-                if (event.animationName === 'fadeOutScale') {
-                    errorField.style.display = 'none';
-                }
-            });
+        const modal = document.getElementById('bannerModal');
+        const closeModal = document.querySelector('.close-modal-text');
+        const dontShowAgainCheckbox = document.getElementById('dontShowAgain');
+        const storedData = JSON.parse(localStorage.getItem('bannerState') || '{}');
+        const dontShowAgain = storedData.dontShowAgain === true;
+        const storedVersion = storedData.version || "0.0.0";
+
+        if (modal) {
+            if (forceBanner === 1 && (!dontShowAgain || storedVersion !== appVersion)) {
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            } else if (forceBanner !== 1 && !dontShowAgain) {
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+
+            if (closeModal) {
+                closeModal.addEventListener('click', function () {
+                    modal.classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                    if (dontShowAgainCheckbox && dontShowAgainCheckbox.checked) {
+                        localStorage.setItem('bannerState', JSON.stringify({
+                            dontShowAgain: true,
+                            version: appVersion
+                        }));
+                    }
+                });
+            }
         }
-    });
+    }
+    await loadTrains();
+    setupTrainDropdown();
+    if (typeof initMaterialCalendar === 'function') {
+        initMaterialCalendar();
+    }
+    var matrixForm = document.getElementById('matrixForm');
+    if (matrixForm) {
+        matrixForm.addEventListener('submit', validateForm);
+    }
 });
 
 function showLoaderAndSubmit(event) {
@@ -829,46 +839,6 @@ function loadBannerImage() {
         };
     });
 }
-
-document.addEventListener('DOMContentLoaded', async function () {
-    if (document.getElementById('bannerModal')) {
-        await loadBannerImage();
-
-        const configData = JSON.parse(document.getElementById('app-config').textContent);
-        const forceBanner = configData.force_banner || 0;
-        const appVersion = configData.version || "1.0.0";
-
-        const modal = document.getElementById('bannerModal');
-        const closeModal = document.querySelector('.close-modal-text');
-        const dontShowAgainCheckbox = document.getElementById('dontShowAgain');
-        const storedData = JSON.parse(localStorage.getItem('bannerState') || '{}');
-        const dontShowAgain = storedData.dontShowAgain === true;
-        const storedVersion = storedData.version || "0.0.0";
-
-        if (modal) {
-            if (forceBanner === 1 && (!dontShowAgain || storedVersion !== appVersion)) {
-                modal.classList.add('active');
-                document.body.style.overflow = 'hidden';
-            } else if (forceBanner !== 1 && !dontShowAgain) {
-                modal.classList.add('active');
-                document.body.style.overflow = 'hidden';
-            }
-
-            if (closeModal) {
-                closeModal.addEventListener('click', function () {
-                    modal.classList.remove('active');
-                    document.body.style.overflow = 'auto';
-                    if (dontShowAgainCheckbox && dontShowAgainCheckbox.checked) {
-                        localStorage.setItem('bannerState', JSON.stringify({
-                            dontShowAgain: true,
-                            version: appVersion
-                        }));
-                    }
-                });
-            }
-        }
-    }
-});
 
 function openModal(modalId, event) {
     if (event) {
