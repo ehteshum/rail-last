@@ -340,11 +340,12 @@ function getBSTDate() {
 }
 
 function formatDate(date) {
-    return date.toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-    }).replace(/ /g, "-");
+    // Use fixed month abbreviations compatible with Python's %b (3-letter, 'Sep' not 'Sept')
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = monthNames[date.getMonth()];
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
 }
 
 function parseDate(dateStr) {

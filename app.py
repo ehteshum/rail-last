@@ -170,6 +170,10 @@ def matrix():
 
     train_model_full = request.form.get('train_model', '').strip()
     journey_date_str = request.form.get('date', '').strip()
+    # Normalize possible 'Sept' (from some browser locale short month form) to 'Sep' for Python parsing
+    if journey_date_str:
+        # Accept both 'Sept' and 'SEP' variations
+        journey_date_str = re.sub(r'-(?i:sept)-', '-Sep-', journey_date_str)
     
     device_type, browser = get_user_device_info()
     logger.info(f"Train Matrix Request - Train: '{train_model_full}', Date: '{journey_date_str}' | Device: {device_type}, Browser: {browser}")
@@ -182,8 +186,18 @@ def matrix():
         date_obj = datetime.strptime(journey_date_str, '%d-%b-%Y')
         api_date_format = date_obj.strftime('%Y-%m-%d')
     except ValueError:
-        session['error'] = "Invalid date format. Use DD-MMM-YYYY (e.g. 15-Nov-2024)."
-        return redirect(url_for('home'))
+        # Extra fallback: attempt to handle 4-letter Sept explicitly if somehow still present
+        if 'Sept' in journey_date_str:
+            fixed_str = journey_date_str.replace('Sept', 'Sep')
+            try:
+                date_obj = datetime.strptime(fixed_str, '%d-%b-%Y')
+                api_date_format = date_obj.strftime('%Y-%m-%d')
+            except ValueError:
+                session['error'] = "Invalid date format. Use DD-MMM-YYYY (e.g. 15-Nov-2024)."
+                return redirect(url_for('home'))
+        else:
+            session['error'] = "Invalid date format. Use DD-MMM-YYYY (e.g. 15-Nov-2024)."
+            return redirect(url_for('home'))
 
     model_match = re.match(r'.*\((\d+)\)$', train_model_full)
     if model_match:
