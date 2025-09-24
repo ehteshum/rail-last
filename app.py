@@ -159,6 +159,55 @@ def home():
         script_js=SCRIPT_JS_CONTENT
     )
 
+def _normalize_journey_date(raw_date: str) -> str:
+    """Attempt to normalize user-provided journey date into DD-MMM-YYYY.
+    Accepts a variety of inputs: 25-Sep-2025, 25-Sept-2025, 25-September-2025,
+    2025-09-25, 25/09/2025, 25/September/2025, 25 Sep 2025, etc."""
+    if not raw_date:
+        raise ValueError("empty date")
+    s = raw_date.strip()
+    # Replace common separators with '-'
+    s = re.sub(r'[\/_.\s]+', '-', s)
+    # Remove multiple dashes
+    s = re.sub(r'-{2,}', '-', s)
+    attempt_formats = [
+        '%d-%b-%Y', '%d-%B-%Y', '%Y-%m-%d', '%d-%m-%Y', '%d-%b-%y', '%d-%B-%y'
+    ]
+    # Special case: if month is written as Sept
+    s_alt = re.sub(r'(?i)Sept', 'Sep', s)
+    tried_strings = [s, s_alt] if s_alt != s else [s]
+    dt = None
+    last_error = None
+    for candidate in tried_strings:
+        for fmt in attempt_formats:
+            try:
+                dt = datetime.strptime(candidate, fmt)
+                break
+            except ValueError as e:
+                last_error = e
+        if dt:
+            break
+    if not dt:
+        # Try manual token parsing (e.g. 25-September-2025 or 25-09-25 ambiguous)
+        parts = s.split('-')
+        if len(parts) == 3:
+            d, m, y = parts
+            try:
+                if len(y) == 2:
+                    y = '20' + y
+                if m.isdigit() and 1 <= int(m) <= 12:
+                    dt = datetime(int(y), int(m), int(d))
+                else:
+                    # Take first 3 letters of month name
+                    m3 = re.sub(r'(?i)sept', 'sep', m)[:3].title()
+                    m_index = datetime.strptime(m3, '%b').month
+                    dt = datetime(int(y), m_index, int(d))
+            except Exception as e:  # noqa: BLE001
+                last_error = e
+    if not dt:
+        raise ValueError(f"Unrecognized date format: '{raw_date}'. {last_error or ''}")
+    return dt.strftime('%d-%b-%Y')
+
 @app.route('/matrix', methods=['GET', 'POST'])
 def matrix():
     maintenance_response = check_maintenance()
@@ -169,11 +218,12 @@ def matrix():
         abort(404)
 
     train_model_full = request.form.get('train_model', '').strip()
-    journey_date_str = request.form.get('date', '').strip()
-    # Normalize possible 'Sept' (from some browser locale short month form) to 'Sep' for Python parsing
-    if journey_date_str:
-        # Accept both 'Sept' and 'SEP' variations
-        journey_date_str = re.sub(r'-(?i:sept)-', '-Sep-', journey_date_str)
+    raw_date_input = request.form.get('date', '').strip()
+    try:
+        journey_date_str = _normalize_journey_date(raw_date_input)
+    except ValueError:
+        session['error'] = "Invalid date format. Use DD-MMM-YYYY (e.g. 15-Nov-2024)."
+        return redirect(url_for('home'))
     
     device_type, browser = get_user_device_info()
     logger.info(f"Train Matrix Request - Train: '{train_model_full}', Date: '{journey_date_str}' | Device: {device_type}, Browser: {browser}")
@@ -182,22 +232,9 @@ def matrix():
         session['error'] = "Both Train Name and Journey Date are required."
         return redirect(url_for('home'))
 
-    try:
-        date_obj = datetime.strptime(journey_date_str, '%d-%b-%Y')
-        api_date_format = date_obj.strftime('%Y-%m-%d')
-    except ValueError:
-        # Extra fallback: attempt to handle 4-letter Sept explicitly if somehow still present
-        if 'Sept' in journey_date_str:
-            fixed_str = journey_date_str.replace('Sept', 'Sep')
-            try:
-                date_obj = datetime.strptime(fixed_str, '%d-%b-%Y')
-                api_date_format = date_obj.strftime('%Y-%m-%d')
-            except ValueError:
-                session['error'] = "Invalid date format. Use DD-MMM-YYYY (e.g. 15-Nov-2024)."
-                return redirect(url_for('home'))
-        else:
-            session['error'] = "Invalid date format. Use DD-MMM-YYYY (e.g. 15-Nov-2024)."
-            return redirect(url_for('home'))
+    # journey_date_str now guaranteed normalized
+    date_obj = datetime.strptime(journey_date_str, '%d-%b-%Y')
+    api_date_format = date_obj.strftime('%Y-%m-%d')
 
     model_match = re.match(r'.*\((\d+)\)$', train_model_full)
     if model_match:
