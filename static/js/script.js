@@ -321,6 +321,7 @@ const input = document.getElementById("date");
 let calendarCurrentMonth;
 let calendarMinDate;
 let calendarMaxDate;
+let calendarJustOpened = false;
 
 function getBSTDate() {
     const inputElement = document.getElementById('date');
@@ -455,6 +456,7 @@ function openMaterialCalendar() {
     generateMaterialCalendar();
 
     suppressEvents = true;
+    calendarJustOpened = true;
 
     if (!calendarClickHandlerAdded) {
         calendar.addEventListener("mousedown", (e) => {
@@ -468,6 +470,7 @@ function openMaterialCalendar() {
 
     setTimeout(() => {
         suppressEvents = false;
+        calendarJustOpened = false;
     }, 200);
 }
 
@@ -666,15 +669,48 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
     await loadTrains();
     await loadStations();
-    setupTrainDropdown();
-    initializeTrainSearch();
     if (typeof initMaterialCalendar === 'function') {
         initMaterialCalendar();
     }
-    var matrixForm = document.getElementById('matrixForm');
-    if (matrixForm) {
-        matrixForm.addEventListener('submit', validateForm);
+    // Ensure calendar interactions behave like the working repo
+    if (typeof setupCalendarBlurClose === 'function') {
+        setupCalendarBlurClose();
     }
+    if (typeof setupCalendarClickOutside === 'function') {
+        setupCalendarClickOutside();
+    }
+    setupTrainDropdown();
+    setupClearButton('train-model-input', 'train-model-clear');
+    initializeTrainSearch();
+
+    const matrixForm = document.getElementById('matrixForm');
+    if (matrixForm) matrixForm.addEventListener('submit', validateForm);
+
+    // Mirror working repo: clear error state on input
+    const fields = [
+        { id: 'train_model', errorId: 'train_model-error' },
+        { id: 'date', errorId: 'date-error' }
+    ];
+    fields.forEach(field => {
+        const inputField = document.getElementById(field.id);
+        const errorField = document.getElementById(field.errorId);
+        const textInput = field.id === 'train_model' ? document.getElementById('train-model-input') : null;
+        if (inputField && errorField) {
+            const fieldElement = textInput || inputField;
+            fieldElement.addEventListener('input', function () {
+                if (errorField.classList.contains('show')) {
+                    errorField.classList.remove('show');
+                    errorField.classList.add('hide');
+                    fieldElement.classList.remove('error-input');
+                }
+            });
+            errorField.addEventListener('animationend', function (event) {
+                if (event.animationName === 'fadeOutScale') {
+                    errorField.style.display = 'none';
+                }
+            });
+        }
+    });
 });
 
 function showLoaderAndSubmit(event) {
@@ -779,7 +815,9 @@ function checkConnectionSpeed() {
 window.addEventListener('online', checkNetworkStatus);
 window.addEventListener('offline', checkNetworkStatus);
 
-flyoutClose.addEventListener('click', hideFlyout);
+if (flyoutClose) {
+    flyoutClose.addEventListener('click', hideFlyout);
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     checkNetworkStatus();
