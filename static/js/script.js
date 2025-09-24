@@ -665,7 +665,9 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
     await loadTrains();
+    await loadStations();
     setupTrainDropdown();
+    initializeTrainSearch();
     if (typeof initMaterialCalendar === 'function') {
         initMaterialCalendar();
     }
