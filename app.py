@@ -174,13 +174,15 @@ def _normalize_journey_date(raw_date: str) -> str:
     s = _normalize_digits(s)
     # Remove commas and periods that may appear after month names (e.g., Sep., Sept.,)
     s = re.sub(r'[.,]', ' ', s)
+    # Normalize various Unicode dash characters to '-'
+    s = re.sub(r'[\u2010\u2011\u2012\u2013\u2014\u2212]', '-', s)
     # Replace common separators / whitespace with '-'
     s = re.sub(r'[\/_\s]+', '-', s)
     # Remove multiple dashes
     s = re.sub(r'-{2,}', '-', s)
     attempt_formats = [
         '%d-%b-%Y', '%d-%B-%Y', '%Y-%m-%d', '%d-%m-%Y', '%d-%b-%y', '%d-%B-%y',
-        '%d-%m-%y'
+        '%d-%m-%y', '%b-%d-%Y', '%B-%d-%Y', '%Y-%b-%d', '%Y-%B-%d'
     ]
     # Special case: if month is written as Sept
     s_alt = re.sub(r'(?i)Sept', 'Sep', s)
