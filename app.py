@@ -166,12 +166,21 @@ def _normalize_journey_date(raw_date: str) -> str:
     if not raw_date:
         raise ValueError("empty date")
     s = raw_date.strip()
-    # Replace common separators with '-'
-    s = re.sub(r'[\/_.\s]+', '-', s)
+    # Convert any unicode digits to ASCII (e.g., Bengali numerals)
+    def _normalize_digits(text: str) -> str:
+        return ''.join({
+            '০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9'
+        }.get(ch, ch) for ch in text)
+    s = _normalize_digits(s)
+    # Remove commas and periods that may appear after month names (e.g., Sep., Sept.,)
+    s = re.sub(r'[.,]', ' ', s)
+    # Replace common separators / whitespace with '-'
+    s = re.sub(r'[\/_\s]+', '-', s)
     # Remove multiple dashes
     s = re.sub(r'-{2,}', '-', s)
     attempt_formats = [
-        '%d-%b-%Y', '%d-%B-%Y', '%Y-%m-%d', '%d-%m-%Y', '%d-%b-%y', '%d-%B-%y'
+        '%d-%b-%Y', '%d-%B-%Y', '%Y-%m-%d', '%d-%m-%Y', '%d-%b-%y', '%d-%B-%y',
+        '%d-%m-%y'
     ]
     # Special case: if month is written as Sept
     s_alt = re.sub(r'(?i)Sept', 'Sep', s)
@@ -205,6 +214,7 @@ def _normalize_journey_date(raw_date: str) -> str:
             except Exception as e:  # noqa: BLE001
                 last_error = e
     if not dt:
+        logger.warning(f"Date normalization failed for input: '{raw_date}' -> sanitized '{s}'")
         raise ValueError(f"Unrecognized date format: '{raw_date}'. {last_error or ''}")
     return dt.strftime('%d-%b-%Y')
 
