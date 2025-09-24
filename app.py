@@ -216,7 +216,9 @@ def _normalize_journey_date(raw_date: str) -> str:
     if not dt:
         logger.warning(f"Date normalization failed for input: '{raw_date}' -> sanitized '{s}'")
         raise ValueError(f"Unrecognized date format: '{raw_date}'. {last_error or ''}")
-    return dt.strftime('%d-%b-%Y')
+    # Return with fixed month abbreviations (never 'Sept')
+    month_names = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+    return f"{dt.day:02d}-{month_names[dt.month-1]}-{dt.year}"
 
 @app.route('/matrix', methods=['GET', 'POST'])
 def matrix():
