@@ -146,6 +146,7 @@ def home():
         app_version=app_version,
         CONFIG=config,
         is_banner_enabled=CONFIG.get("is_banner_enabled", 0),
+    show_legal=CONFIG.get("show_legal", 1),
         banner_image=banner_image,
         min_date=min_date.strftime("%Y-%m-%d"),
         max_date=max_date.strftime("%Y-%m-%d"),
