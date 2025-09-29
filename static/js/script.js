@@ -880,7 +880,7 @@ function loadBannerImage() {
         };
     });
 }
-
+// (Banner modal DOMContentLoaded handled earlier in the unified block)
 function openModal(modalId, event) {
     if (event) {
         event.preventDefault();
@@ -1226,6 +1226,7 @@ async function searchTrainsBetweenStations() {
         }
         return;
     }
+
     button.disabled = true;
     button.style.opacity = '0.6';
     button.style.cursor = 'not-allowed';

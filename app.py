@@ -60,6 +60,7 @@ if os.path.exists(default_banner_path):
             encoded_image = base64.b64encode(img_file.read()).decode('utf-8')
             DEFAULT_BANNER_IMAGE = f"data:image/png;base64,{encoded_image}"
     except Exception:
+        # If default banner fails to load, ignore silently
         pass
 
 def configure_request_queue():
@@ -124,9 +125,8 @@ def home():
     banner_image = CONFIG.get("image_link") or DEFAULT_BANNER_IMAGE
     if not banner_image:
         banner_image = ""
-
-    bst_tz = pytz.timezone('Asia/Dhaka')
-    bst_now = datetime.now(bst_tz)
+    # Compute BST now for min/max date range
+    bst_now = datetime.now(pytz.timezone('Asia/Dhaka'))
     min_date = bst_now.replace(hour=0, minute=0, second=0, microsecond=0)
     max_date = min_date + timedelta(days=10)
     bst_midnight_utc = min_date.astimezone(pytz.UTC).strftime('%Y-%m-%dT%H:%M:%SZ')
@@ -221,7 +221,6 @@ def _normalize_journey_date(raw_date: str) -> str:
     # Return with fixed month abbreviations (never 'Sept')
     month_names = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
     return f"{dt.day:02d}-{month_names[dt.month-1]}-{dt.year}"
-
 @app.route('/matrix', methods=['GET', 'POST'])
 def matrix():
     maintenance_response = check_maintenance()

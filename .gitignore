@@ -1,4 +1,5 @@
 .env
+<<<<<<< HEAD
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -38,3 +39,6 @@ Thumbs.db
 # Local secrets
 /.env*
 /etc/secrets/
+=======
+__pycache__
+>>>>>>> upstream/main

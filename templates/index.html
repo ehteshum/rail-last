@@ -42,6 +42,10 @@
 </head>
 
 <body>
+    <div class="flyout-notification" id="flyoutNotification">
+        <span id="flyoutMessage"></span>
+        <i class="fas fa-times flyout-close" id="flyoutClose"></i>
+    </div>
     <noscript>
         <div class="container noscript-warning">
             <h2><i class="fas fa-exclamation-circle"></i> Please Enable JavaScript</h2>
@@ -54,10 +58,6 @@
         </div>
     </noscript>
 
-    <div class="flyout-notification" id="flyoutNotification">
-        <span id="flyoutMessage"></span>
-        <i class="fas fa-times flyout-close" id="flyoutClose"></i>
-    </div>
     <div class="container main-content">
         <h1 style="margin-bottom:0;text-align:center;"><i class="fas fa-train"></i> BD TRAIN</h1>
         <div style="text-align:center;font-size:1.3em;font-weight:bold;margin-top:0.7em;margin-bottom:0.5em;color:#222;">By ISHMAM</div>
@@ -71,7 +71,6 @@
         <!-- <p class="note bengali">
             <span class="note-bold highlight">লক্ষ্য করুনঃ </span> আপনি আপনার নিজের কম্পিউটার থেকেই পুরো প্রজেক্টটি চালাতে পারবেন। এ সম্পর্কিত প্রয়োজনীয় দিকনির্দেশনা <a href="https://youtu.be/zG55QW73N0c" target="_blank">এই ইউটিউব ভিডিওতে</a> পাওয়া যাবে।
         </p><br> -->
-
         <!-- <p class="note adjustment">
             <span class="note-bold highlight">Notice: </span> The hosting site will undergo scheduled maintenance on <strong>June 15, 2025</strong>, from <strong>9:00 PM</strong> to <strong>10:00 PM BST</strong>. During this time, you may experience interruptions while using this website. Apologies for the inconvenience.
         </p><br> -->
@@ -199,6 +198,25 @@
                 </button>
             </div>
         </form>
+        <footer class="new-footer">
+            <p>This project is open source. Check it out on <a
+                    href="https://github.com/nishatrhythm/Bangladesh-Railway-Train-Seat-Matrix-Web-Application"
+                    target="_blank">GitHub</a>.</p>
+        </footer>
+
+        <div class="footer-links">
+            <a href="https://trainseat.onrender.com" target="_blank">SEAT AVAILABILITY</a>
+            <span class="dot">•</span>
+            <a href="https://trainreport.onrender.com" target="_blank">TRAIN REPORT</a>
+            <span class="dot">•</span>
+            <a href="https://forms.gle/NV72PC1z75sq77tg7" target="_blank">FEEDBACK</a>
+            <br>
+            <div class="legal-links">
+                <a href="#" onclick="openModal('termsModal', event)">Terms and Conditions</a>
+                <span class="dot">•</span>
+                <a href="#" onclick="openModal('privacyModal', event)">Privacy Policy</a>
+            </div>
+        </div>
 
         {% if is_banner_enabled %}
         <div id="bannerModal" class="modal">
