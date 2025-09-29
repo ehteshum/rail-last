@@ -198,13 +198,16 @@
                 </button>
             </div>
         </form>
-        <footer class="new-footer">
-            <p>This project is open source. Check it out on <a
-                    href="https://github.com/nishatrhythm/Bangladesh-Railway-Train-Seat-Matrix-Web-Application"
-                    target="_blank">GitHub</a>.</p>
-        </footer>
+    {% if show_open_source_footer %}
+    <footer class="new-footer">
+        <p>This project is open source. Check it out on <a
+            href="https://github.com/nishatrhythm/Bangladesh-Railway-Train-Seat-Matrix-Web-Application"
+            target="_blank">GitHub</a>.</p>
+    </footer>
+    {% endif %}
 
-        <div class="footer-links">
+    {% if show_footer_links %}
+    <div class="footer-links">
             <a href="https://trainseat.onrender.com" target="_blank">SEAT AVAILABILITY</a>
             <span class="dot">•</span>
             <a href="https://trainreport.onrender.com" target="_blank">TRAIN REPORT</a>
@@ -219,6 +222,7 @@
             </div>
             {% endif %}
         </div>
+    {% endif %}
 
         {% if is_banner_enabled %}
         <div id="bannerModal" class="modal">

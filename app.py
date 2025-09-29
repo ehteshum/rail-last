@@ -147,6 +147,8 @@ def home():
         CONFIG=config,
         is_banner_enabled=CONFIG.get("is_banner_enabled", 0),
     show_legal=CONFIG.get("show_legal", 1),
+    show_open_source_footer=CONFIG.get("show_open_source_footer", 1),
+    show_footer_links=CONFIG.get("show_footer_links", 1),
         banner_image=banner_image,
         min_date=min_date.strftime("%Y-%m-%d"),
         max_date=max_date.strftime("%Y-%m-%d"),

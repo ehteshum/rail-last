@@ -6,5 +6,7 @@
     "image_link": "https://raw.githubusercontent.com/nishatrhythm/Bangladesh-Railway-Train-Seat-Matrix-Web-Application/refs/heads/main/static/images/report-website-promotion.png",
     "force_banner": 0,
     "queue_enabled": false,
-    "show_legal": 0
+    "show_legal": 0,
+    "show_open_source_footer": 0,
+    "show_footer_links": 0
 }
